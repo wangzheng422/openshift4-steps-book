@@ -1,0 +1,6 @@
+[book]
+authors = ["wzh"]
+language = "en"
+multilingual = false
+src = "src"
+title = "OpenShift4 一步一脚印"
