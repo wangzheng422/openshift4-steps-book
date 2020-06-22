@@ -14,7 +14,7 @@
   - [Multus/macvlan](./ocp4.network.multus.md)
 - [openshift4 存储](./ocp4.storage.md)
   - [NFS](./ocp4.storage.nfs.md)
-  - [Local Volumn](./ocp4.storage.local.volumn.md)
+  - [Local Volume](./ocp4.storage.local.volume.md)
   - [hostpath](./ocp4.storage.hostpath.md)
   - [存储优化](./ocp4.storage.tunning.md)
 - [openshift4 安全](./ocp4.sec.md)
