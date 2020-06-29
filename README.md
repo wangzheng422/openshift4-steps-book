@@ -1,6 +1,8 @@
 # openshift4-steps-book
 
-[在选阅读地址](https://wangzheng422.github.io/openshift4-steps-book/introduction.html)
+这是一本正在写作的在线书，主要讲解围绕着openshift4的安装，使用和实施的技巧。
+
+[在线阅读地址](https://wangzheng422.github.io/openshift4-steps-book/introduction.html)
 
 ```bash
 # build book
