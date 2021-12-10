@@ -1,6 +1,6 @@
 [book]
-authors = ["wzh"]
-language = "en"
+authors = ["wangzheng422"]
+language = "zh"
 multilingual = false
 src = "src"
 title = "OpenShift4 一步一脚印"

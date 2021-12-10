@@ -1,1 +1,0 @@
-# openshift4 CNV
