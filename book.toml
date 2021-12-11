@@ -4,6 +4,3 @@ language = "zh"
 multilingual = false
 src = "src"
 title = "OpenShift4 一步一脚印"
-
-[output.html]
-git-repository-url = "https://github.com/wangzheng422/openshift4-steps-book"
