@@ -1,8 +1,12 @@
 # Real-Time Kernel for Openshift4.9
 
+本次试验部署架构图
+
+![](dia/4.7.real-time.kernel.drawio.svg)
+
 # 硬件部署
 
-假设有专属的FPGA，每个FPGA可以连4个RRU另外GPS连接也是在FPGA上。
+假设有专属的FPGA，每个FPGA可以连4个RRU，另外GPS连接也是在FPGA上。
 
 # 先使用performance addon operator，这个是官方推荐的方法。
 
