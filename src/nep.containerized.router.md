@@ -1,4 +1,4 @@
-# service使用host port, router方式暴露
+# hostpath方式注入license, service使用host port, router方式暴露
 
 用本机host path的方式，挂载到容器，从而注入license. 同时用host port + router的方式，暴露管理段服务。
 
