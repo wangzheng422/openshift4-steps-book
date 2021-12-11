@@ -111,6 +111,9 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        <a href="https://github.com/wangzheng422/openshift4-steps-book" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
                     </div>
                 </div>
 
@@ -144,6 +147,7 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="献词"><a class="header" href="#献词">献词</a></h1>
 <p>感谢老婆大人的全程支持。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="openshift49-安装"><a class="header" href="#openshift49-安装">openshift4.9 安装</a></h1>
+<p>这里讲述openshift从无到有的安装过程，目前的版本，聚焦在4.9. 红帽官方有详细的文档，还是要以红帽官方文档为准。不过官方文档比较庞杂，我们这里的文档，主要起到聚焦场景，简化官方文档不相干步骤，方便初学者上手和理解openshift。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="openshift-49-静态ip-半离线-单-master-baremetal-安装"><a class="header" href="#openshift-49-静态ip-半离线-单-master-baremetal-安装">openshift 4.9 静态IP 半离线 单 master baremetal 安装</a></h1>
 <p>本文描述ocp4.9在baremetal(kvm模拟)上面，静态ip安装的方法。</p>
 <p><img src="dia/4.9.bm.upi.1node.drawio.svg" alt="架构图" /></p>
@@ -2316,6 +2320,8 @@ podman run --rm --entrypoint performance-profile-creator -v /data/install/tmp/mu
 #     enabled: true
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nep应用容器化"><a class="header" href="#nep应用容器化">NEP应用容器化</a></h1>
+<p>NEP应用一般都是裸机应用，或者虚拟机应用。上容器平台，大家的做法一般都是直接做一个很大的容器，把容器当虚拟机用。虽然这种做法简单粗暴，完全不符合云原生的初衷，但是这个就是现实。所以容器化要一步一步的来。</p>
+<p>这里就总结了一个NEP应用，逐步上云的过程，现在这个过程还在继续中，所以会不断的丰富和调整。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configmap方式注入license"><a class="header" href="#configmap方式注入license">configmap方式注入license</a></h1>
 <p>是用config map的方式，向容器注入license. 同时用host port + router的方式，暴露管理段服务。</p>
 <pre><code class="language-bash"># license file 加载到config map中
