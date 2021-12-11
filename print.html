@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.env.html"><strong aria-hidden="true">2.4.</strong> 向容器中的systemd服务注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.5.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.6.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.7.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务并注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.4.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.5.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.6.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -1951,8 +1951,10 @@ xz -dc &lt; /boot/initrd-$(uname -r).img | cpio -idmv
 
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="real-time-kernel-for-openshift49"><a class="header" href="#real-time-kernel-for-openshift49">Real-Time Kernel for Openshift4.9</a></h1>
+<p>本次试验部署架构图</p>
+<p><img src="dia/4.7.real-time.kernel.drawio.svg" alt="" /></p>
 <h1 id="硬件部署"><a class="header" href="#硬件部署">硬件部署</a></h1>
-<p>假设有专属的FPGA，每个FPGA可以连4个RRU另外GPS连接也是在FPGA上。</p>
+<p>假设有专属的FPGA，每个FPGA可以连4个RRU，另外GPS连接也是在FPGA上。</p>
 <h1 id="先使用performance-addon-operator这个是官方推荐的方法"><a class="header" href="#先使用performance-addon-operator这个是官方推荐的方法">先使用performance addon operator，这个是官方推荐的方法。</a></h1>
 <p>performance addon operator 是openshift4里面的一个operator，他的作用是，让用户进行简单的yaml配置，然后operator帮助客户进行复杂的kernel parameter, kubelet, tuned配置。</p>
 <pre><code class="language-bash">
@@ -2315,12 +2317,922 @@ podman run --rm --entrypoint performance-profile-creator -v /data/install/tmp/mu
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nep应用容器化"><a class="header" href="#nep应用容器化">NEP应用容器化</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configmap方式注入license"><a class="header" href="#configmap方式注入license">configmap方式注入license</a></h1>
+<p>是用config map的方式，向容器注入license. 同时用host port + router的方式，暴露管理段服务。</p>
+<pre><code class="language-bash"># license file 加载到config map中
+oc create configmap license.for.nep  \
+    --from-file=license=./3496531EC238AD91DED6DBA5BD6B.lic
+
+# to updated config map
+oc create configmap license.for.nep --from-file=license=./3496531EC238AD91DED6DBA5BD6B.lic -o yaml --dry-run=client | oc apply -f -
+
+cat &lt;&lt; EOF &gt; /data/install/vbbu.yaml
+---
+
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;xeth&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.160.0/24&quot;,
+      &quot;gateway&quot;: &quot;192.168.160.254&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.160.1&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.160.1&quot;
+    }
+  }'
+
+
+---
+
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du-ens
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;enp103s0f0&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.12.0/24&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.12.105&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.12.106&quot;
+    }
+  }'
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: du-deployment1
+  labels:
+    app: du-deployment1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: du-pod1
+  template:
+    metadata:
+      labels:
+        app: du-pod1
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+          { &quot;name&quot;: &quot;host-device-du-ens&quot;,
+            &quot;interface&quot;: &quot;veth11&quot; },
+          { &quot;name&quot;: &quot;host-device-du&quot;,
+            &quot;interface&quot;: &quot;xeth&quot; }
+          ]'
+      cpu-load-balancing.crio.io: &quot;true&quot;
+    spec:
+      runtimeClassName: performance-wzh-performanceprofile
+      containers:
+      - name: du-container1
+        image: &quot;registry.ocp4.redhat.ren:5443/ocp4/du:v1-1623-wzh-01&quot;
+        imagePullPolicy: IfNotPresent
+        tty: true
+        stdin: true
+        env:
+          - name: duNetProviderDriver
+            value: &quot;host-netdevice&quot;
+        # command: [&quot;/usr/sbin/init&quot;]
+        # - sleep
+        # - infinity
+        securityContext:
+            privileged: true
+            capabilities:
+                add:
+                - CAP_SYS_ADMIN
+        volumeMounts:
+          - mountPath: /hugepages
+            name: hugepage
+          - name: lib-modules
+            mountPath: /lib/modules
+          - name: src
+            mountPath: /usr/src
+          - name: dev
+            mountPath: /dev
+          - name: cache-volume
+            mountPath: /dev/shm
+          - name: license-volume
+            mountPath: /nep/lic
+        resources:
+          requests:
+            cpu: 14
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+          limits:
+            cpu: 14
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+      volumes:
+        - name: hugepage
+          emptyDir:
+            medium: HugePages
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: src
+          hostPath:
+            path: /usr/src
+        - name: dev
+          hostPath:
+            path: &quot;/dev&quot;
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: license-volume
+          configMap:
+            name: license.for.nep
+            items:
+            - key: license
+              path: license.lic
+      nodeSelector:
+        node-role.kubernetes.io/master: &quot;&quot;
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: du-http 
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80 
+    nodePort: 31071
+  type: NodePort 
+  selector:
+    app: du-pod1
+
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: du-http 
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: Service
+    name: du-http 
+
+---
+
+EOF
+
+oc create -f /data/install/vbbu.yaml
+
+# to restore
+oc delete -f /data/install/vbbu.yaml
+
+# open browser, to access vbbu console
+# http://du-http-default.apps.ocp4s.redhat.ren/
+
+# license file locates in /nep/lic/license.lic
+
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="service使用host-port-router方式暴露"><a class="header" href="#service使用host-port-router方式暴露">service使用host port, router方式暴露</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="容器中使用systemd加载服务"><a class="header" href="#容器中使用systemd加载服务">容器中使用systemd加载服务</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="向容器中的systemd服务注入env参数"><a class="header" href="#向容器中的systemd服务注入env参数">向容器中的systemd服务注入env参数</a></h1>
+<p>用本机host path的方式，挂载到容器，从而注入license. 同时用host port + router的方式，暴露管理段服务。</p>
+<pre><code class="language-bash">
+# 创建host path
+cat &lt;&lt; EOF &gt; /data/install/host-path.yaml
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-set-selinux-for-hostpath-nep-master
+  labels:
+    machineconfiguration.openshift.io/role: master
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    systemd:
+      units:
+        - contents: |
+            [Unit]
+            Description=Set SELinux chcon for hostpath nep
+            Before=kubelet.service
+
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            ExecStartPre=-mkdir -p /var/nep/
+            ExecStart=chcon -h unconfined_u:object_r:container_file_t /var/nep/
+
+            [Install]
+            WantedBy=multi-user.target
+          enabled: true
+          name: hostpath-nep.service
+EOF
+oc create -f /data/install/host-path.yaml
+
+# restore
+oc delete -f /data/install/host-path.yaml
+
+cat &lt;&lt; EOF &gt; /data/install/vbbu.yaml
+---
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;xeth&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.160.0/24&quot;,
+      &quot;gateway&quot;: &quot;192.168.160.254&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.160.1&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.160.1&quot;
+    }
+  }'
+
+---
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du-ens
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;enp103s0f0&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.12.0/24&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.12.105&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.12.106&quot;
+    }
+  }'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: du-deployment1
+  labels:
+    app: du-deployment1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: du-pod1
+  template:
+    metadata:
+      labels:
+        app: du-pod1
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+          { &quot;name&quot;: &quot;host-device-du-ens&quot;,
+            &quot;interface&quot;: &quot;veth11&quot; },
+          { &quot;name&quot;: &quot;host-device-du&quot;,
+            &quot;interface&quot;: &quot;xeth&quot; }
+          ]'
+      cpu-load-balancing.crio.io: &quot;true&quot;
+    spec:
+      runtimeClassName: performance-wzh-performanceprofile
+      containers:
+      - name: du-container1
+        image: &quot;registry.ocp4.redhat.ren:5443/ocp4/du:v1-1623-wzh-01&quot;
+        imagePullPolicy: IfNotPresent
+        tty: true
+        stdin: true
+        env:
+          - name: duNetProviderDriver
+            value: &quot;host-netdevice&quot;
+          - name: DEMO_ENV_NIC
+            value: xeth
+          - name: DEMO_ENV_IP
+            value: &quot;192.168.100.22&quot;
+          - name: DEMO_ENV_MASK
+            value: 24
+        command: [&quot;/usr/sbin/init&quot;]
+        # - sleep
+        # - infinity
+        securityContext:
+            privileged: true
+            capabilities:
+                add:
+                - CAP_SYS_ADMIN
+        volumeMounts:
+          - mountPath: /hugepages
+            name: hugepage
+          - name: lib-modules
+            mountPath: /lib/modules
+          - name: src
+            mountPath: /usr/src
+          - name: dev
+            mountPath: /dev
+          - name: cache-volume
+            mountPath: /dev/shm
+          # - name: license-volume
+          #   mountPath: /nep/lic
+          - name: config
+            mountPath: /nep
+        resources:
+          requests:
+            cpu: 15
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+          limits:
+            cpu: 15
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+      volumes:
+        - name: hugepage
+          emptyDir:
+            medium: HugePages
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: src
+          hostPath:
+            path: /usr/src
+        - name: config
+          hostPath:
+            path: /var/nep
+        - name: dev
+          hostPath:
+            path: &quot;/dev&quot;
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        # - name: license-volume
+        #   configMap:
+        #     name: license.for.nep
+        #     items:
+        #     - key: license
+        #       path: license.lic
+      nodeSelector:
+        node-role.kubernetes.io/master: &quot;&quot;
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: du-http 
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80 
+    nodePort: 31071
+  type: NodePort 
+  selector:
+    app: du-pod1
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: du-http 
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: Service
+    name: du-http 
+
+EOF
+
+oc create -f /data/install/vbbu.yaml
+
+# to restore
+oc delete -f /data/install/vbbu.yaml
+
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="容器中使用systemd加载服务并注入env参数"><a class="header" href="#容器中使用systemd加载服务并注入env参数">容器中使用systemd加载服务并注入env参数</a></h1>
+<p>客户希望在容器中，是用systemd做1号进程，从而让容器方案和裸机方案对齐。</p>
+<pre><code class="language-bash">mkdir -p /data/systemd
+
+cd /data/systemd
+cat &lt;&lt; 'EOF' &gt; service.sh
+#!/bin/bash
+
+# Import our environment variables from systemd
+for e in $(tr &quot;\000&quot; &quot;\n&quot; &lt; /proc/1/environ); do
+  # if [[ $e == DEMO_ENV* ]]; then
+    eval &quot;export $e&quot;
+  # fi
+done
+
+echo $DEMO_ENV_NIC &gt; /demo.txt
+echo $DEMO_ENV_IP &gt;&gt; /demo.txt
+echo $DEMO_ENV_MASK &gt;&gt; /demo.txt
+
+EOF
+cat &lt;&lt; EOF &gt; vbbu.service
+[Unit]
+Description=vBBU Server
+After=network.target
+
+[Service]
+Type=forking
+User=root
+WorkingDirectory=/root/
+ExecStart=/service.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat &lt;&lt; EOF &gt; ./vbbu.dockerfile
+FROM docker.io/rockylinux/rockylinux:8
+
+USER root
+COPY service.sh /service.sh
+RUN chmod +x /service.sh
+COPY vbbu.service /etc/systemd/system/vbbu.service
+
+RUN systemctl enable vbbu.service
+
+entrypoint [&quot;/usr/sbin/init&quot;]
+EOF
+
+buildah bud -t quay.io/wangzheng422/qimgs:systemd -f vbbu.dockerfile .
+
+podman run --rm \
+  --env DEMO_ENV_NIC=eth1 \
+  --env DEMO_ENV_IP=192.168.100.22 \
+  --env DEMO_ENV_MASK=24 \
+  quay.io/wangzheng422/qimgs:systemd
+
+podman exec -it `podman ps | grep systemd | awk '{print $1}'` bash
+
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="设备驱动容器化方式加载"><a class="header" href="#设备驱动容器化方式加载">设备驱动容器化方式加载</a></h1>
+<p>从容器向宿主机注入设备驱动，是用init container的方式，把驱动文件注入到容器中，然后容器向宿主机注入。</p>
+<p>红帽官方的方案，是device kit/SRO，但是那个太复杂了，我们使用简单粗暴的方式实现。</p>
+<ul>
+<li>https://stackoverflow.com/questions/55291850/kubernetes-how-to-copy-a-cfg-file-into-container-before-contaner-running</li>
+<li>https://access.redhat.com/solutions/4929021</li>
+</ul>
+<pre><code class="language-bash">
+mkdir -p /data/wzh/fpga
+cd /data/wzh/fpga
+
+cat &lt;&lt; 'EOF' &gt; ./ocp4.install.sh
+#!/bin/bash
+
+if  chroot /host lsmod  | grep nr_drv &gt; /dev/null 2&gt;&amp;1
+then
+    echo NR Driver Module had loaded!
+else
+    echo Inserting NR Driver Module
+    chroot /host rmmod nr_drv &gt; /dev/null 2&gt;&amp;1
+
+    if [ $(uname -r) == &quot;4.18.0-305.19.1.rt7.91.el8_4.x86_64&quot; ];
+    then
+        echo insmod nr_drv_wr.ko ...
+        /bin/cp -f nr_drv_wr.ko /host/tmp/nr_drv_wr.ko
+        chroot /host insmod /tmp/nr_drv_wr.ko load_xeth=1
+        /bin/rm -f /host/tmp/nr_drv_wr.ko
+
+        CON_NAME=`chroot /host nmcli -g GENERAL.CONNECTION dev show xeth`
+
+        chroot /host nmcli connection modify &quot;$CON_NAME&quot; con-name xeth
+        chroot /host nmcli connection modify xeth ipv4.method disabled ipv6.method disabled
+        chroot /host nmcli dev conn xeth
+    else
+        echo insmod nr_drv_ko Failed!
+    fi
+
+fi
+EOF
+
+cat &lt;&lt; EOF &gt; ./fpga.dockerfile
+FROM docker.io/busybox:1.34
+
+USER root
+COPY Driver.PKG /Driver.PKG
+
+COPY ocp4.install.sh /ocp4.install.sh
+RUN chmod +x /ocp4.install.sh
+
+WORKDIR /
+EOF
+
+buildah bud -t registry.ocp4.redhat.ren:5443/nep/fgpa-driver:v04 -f fpga.dockerfile .
+
+buildah push registry.ocp4.redhat.ren:5443/nep/fgpa-driver:v04
+
+cat &lt;&lt; EOF &gt; /data/install/fpga.driver.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fpga-driver
+  # namespace: default
+  labels:
+    app: fpga-driver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fpga-driver
+  template:
+    metadata:
+      labels:
+        app: fpga-driver
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: &quot;app&quot;
+                    operator: In
+                    values:
+                    - fpga-driver
+              topologyKey: &quot;kubernetes.io/hostname&quot;
+      nodeselector:
+        node-role.kubernetes.io/master: &quot;&quot;
+      # restartPolicy: Never
+      initContainers:
+      - name: copy
+        image: registry.ocp4.redhat.ren:5443/nep/fgpa-driver:v04
+        command: [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;tar zvxf /Driver.PKG --strip 1 -C /nep/driver/ &amp;&amp; /bin/cp -f /ocp4.install.sh /nep/driver/ &quot;]
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: driver-files
+          mountPath: /nep/driver/
+      containers:
+      - name: driver
+        image: registry.redhat.io/rhel8/support-tools:8.4
+        # imagePullPolicy: Always
+        command: [ &quot;/usr/bin/bash&quot;,&quot;-c&quot;,&quot;cd /nep/driver/ &amp;&amp; bash ./ocp4.install.sh &amp;&amp; sleep infinity &quot; ]
+        # command: [ &quot;/usr/bin/bash&quot;,&quot;-c&quot;,&quot;tail -f /dev/null || true &quot; ]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 20Mi
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        volumeMounts:
+        - name: driver-files
+          mountPath: /nep/driver/
+        - name: host
+          mountPath: /host
+      volumes: 
+      - name: driver-files
+        emptyDir: {}
+      - name: host
+        hostPath:
+          path: /
+          type: Directory
+EOF
+oc create -f /data/install/fpga.driver.yaml
+
+# to restore
+oc delete -f /data/install/fpga.driver.yaml
+
+
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="基础镜像制作"><a class="header" href="#基础镜像制作">基础镜像制作</a></h1>
+<p>帮助客户梳理基础镜像构建，开始构建CI/CD流程.</p>
+<p>基于UBI的镜像，有订阅证书问题，现在准备一下。</p>
+<pre><code class="language-bash"># on a vultr host, rockylinux
+mkdir -p /data/rhel8/entitle
+cd /data/rhel8/entitle
+
+# goto https://access.redhat.com/management/subscriptions
+# search employee sku, find a system, go into, and download from subscription
+# or goto: https://access.redhat.com/management/systems/4d1e4cc0-2c99-4431-99ce-2f589a24ea11/subscriptions
+dnf install -y unzip 
+unzip *
+unzip consumer_export.zip
+find . -name *.pem -exec cp {} ./ \;
+
+mkdir -p /data/dockerfile/
+cd /data/dockerfile/
+
+ls /data/rhel8/entitle/*.pem | sed -n '2p' | xargs -I DEMO /bin/cp -f DEMO ./ 
+
+</code></pre>
+<h2 id="redhat-ubi8"><a class="header" href="#redhat-ubi8">redhat ubi8</a></h2>
+<p>UBI的容器，有注入和使用证书的技巧。</p>
+<pre><code class="language-bash">cat &lt;&lt; EOF &gt; /data/dockerfile/nep.redhat.ubi8.dockerfile
+FROM registry.access.redhat.com/ubi8
+
+COPY *.pem /etc/pki/entitlement/entitlement.pem
+COPY *.pem /etc/pki/entitlement/entitlement-key.pem
+
+RUN dnf -y update || true &amp;&amp; \
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum/pluginconf.d/subscription-manager.conf &amp;&amp; \
+  sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/yum.repos.d/redhat.repo &amp;&amp; \
+  dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm &amp;&amp; \
+  dnf -y update &amp;&amp; \
+  dnf -y install net-tools pciutils lksctp-tools iptraf-ng htop vim tcpdump wget bzip2 lrzsz dhcp-server dhcp-client  &amp;&amp; \
+  dnf -y clean all 
+
+EOF
+buildah bud -t quay.io/nep/base-image:ubi8 -f /data/dockerfile/nep.redhat.ubi8.dockerfile .
+
+</code></pre>
+<h2 id="redhat-ubi7"><a class="header" href="#redhat-ubi7">redhat ubi7</a></h2>
+<p>UBI的容器，有注入和使用证书的技巧。</p>
+<pre><code class="language-bash">cat &lt;&lt; EOF &gt; /data/dockerfile/nep.redhat.ubi.7.dockerfile
+FROM registry.access.redhat.com/ubi7/ubi
+
+COPY *.pem /etc/pki/entitlement/entitlement.pem
+COPY *.pem /etc/pki/entitlement/entitlement-key.pem
+
+RUN sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/rhsm/rhsm.conf &amp;&amp; \
+  yum -y update || true &amp;&amp; \
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum/pluginconf.d/subscription-manager.conf &amp;&amp; \
+  sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/yum.repos.d/redhat.repo &amp;&amp; \
+  yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm &amp;&amp; \
+  yum -y update &amp;&amp; \
+  yum -y install net-tools pciutils lksctp-tools iptraf-ng htop vim tcpdump wget bzip2 lrzsz dhcp &amp;&amp; \
+  yum clean all 
+
+EOF
+buildah bud -t quay.io/nep/base-image:ubi7 -f /data/dockerfile/nep.redhat.ubi.7.dockerfile .
+
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="helm-chart--helm-operator-制作"><a class="header" href="#helm-chart--helm-operator-制作">helm chart / helm operator 制作</a></h1>
+<h2 id="build-helm-operator"><a class="header" href="#build-helm-operator">build helm operator</a></h2>
+<pre><code class="language-bash">mkdir -p /data/down
+cd /data/down
+wget https://mirror.openshift.com/pub/openshift-v4/clients/operator-sdk/latest/operator-sdk-linux-x86_64.tar.gz
+tar zvxf operator-sdk-linux-x86_64.tar.gz
+install operator-sdk /usr/local/bin/
+
+operator-sdk init --plugins helm --help
+
+mkdir -p /data/helm
+cd /data/helm
+
+# 初始化项目
+operator-sdk init \
+    --plugins=helm \
+    --project-name nep-helm-operator \
+    --domain=nep.com \
+    --group=apps \
+    --version=v1alpha1 \
+    --kind=VBBU 
+
+make bundle
+# operator-sdk generate kustomize manifests -q
+
+# Display name for the operator (required):
+# &gt; nep vBBU
+
+# Description for the operator (required):
+# &gt; nep vRAN application including fpga driver, vCU, vDU
+
+# Provider's name for the operator (required):
+# &gt; nep
+
+# Any relevant URL for the provider name (optional):
+# &gt; na.nep.com
+
+# Comma-separated list of keywords for your operator (required):
+# &gt; nep,vbbu,vran,vcu,vdu
+
+# Comma-separated list of maintainers and their emails (e.g. 'name1:email1, name2:email2') (required):
+# &gt;
+# No list provided.
+# Comma-separated list of maintainers and their emails (e.g. 'name1:email1, name2:email2') (required):
+# &gt; wangzheng:wangzheng422@foxmail.com
+# cd config/manager &amp;&amp; /data/helm/bin/kustomize edit set image controller=quay.io/nep/nep-helm-operator:latest
+# /data/helm/bin/kustomize build config/manifests | operator-sdk generate bundle -q --overwrite --version 0.0.1
+# INFO[0001] Creating bundle.Dockerfile
+# INFO[0001] Creating bundle/metadata/annotations.yaml
+# INFO[0001] Bundle metadata generated suceessfully
+# operator-sdk bundle validate ./bundle
+# INFO[0000] All validation tests have completed successfully
+
+cd /data/helm/helm-charts/vbbu
+helm lint
+
+dnf install -y podman-docker
+
+cd /data/helm/
+make docker-build
+# docker build -t quay.io/nep/nep-helm-operator:v01 .
+# Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+# STEP 1/5: FROM registry.redhat.io/openshift4/ose-helm-operator:v4.9
+# STEP 2/5: ENV HOME=/opt/helm
+# --&gt; 1eec2f9c094
+# STEP 3/5: COPY watches.yaml ${HOME}/watches.yaml
+# --&gt; 1836589a08c
+# STEP 4/5: COPY helm-charts  ${HOME}/helm-charts
+# --&gt; b6cd9f24e47
+# STEP 5/5: WORKDIR ${HOME}
+# COMMIT quay.io/nep/nep-helm-operator:v01
+# --&gt; 1f9bcc4cecc
+# Successfully tagged quay.io/nep/nep-helm-operator:v01
+# 1f9bcc4cecc55e68170e2a6f45dad7b318018df8bf3989bd990f567e3ccdfcd9
+
+make docker-push
+# docker push quay.io/nep/nep-helm-operator:v01
+# Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+# Getting image source signatures
+# Copying blob 8cd9b2cfbe06 skipped: already exists
+# Copying blob 5bc03dec6239 skipped: already exists
+# Copying blob 525ed45dbdb1 skipped: already exists
+# Copying blob 758ace4ace74 skipped: already exists
+# Copying blob deb6b0f93acd skipped: already exists
+# Copying blob ac83cd3b61fd skipped: already exists
+# Copying blob 12f964d7475b [--------------------------------------] 0.0b / 0.0b
+# Copying config 1f9bcc4cec [--------------------------------------] 0.0b / 4.0KiB
+# Writing manifest to image destination
+# Copying config 1f9bcc4cec [--------------------------------------] 0.0b / 4.0KiB
+# Writing manifest to image destination
+# Storing signatures
+
+make bundle-build BUNDLE_IMG=quay.io/nep/nep-helm-operator:bundle-v01
+# docker build -f bundle.Dockerfile -t quay.io/nep/nep-helm-operator:bundle-v01 .
+# Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+# STEP 1/14: FROM scratch
+# STEP 2/14: LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
+# --&gt; Using cache b67edfbd23d6ba9c3f484a1e01f9da79fbffdc44e913423e2f616e477df372e1
+# --&gt; b67edfbd23d
+# STEP 3/14: LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
+# --&gt; Using cache f2eef5180d3c9c63f40a98880ec95088b8395845e0f90960a194326d77a6f3b4
+# --&gt; f2eef5180d3
+# STEP 4/14: LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
+# --&gt; Using cache 6fc10718a71e30d31cc652b47ac27ca87901ff4fda17a25e2d6bc53344e50673
+# --&gt; 6fc10718a71
+# STEP 5/14: LABEL operators.operatorframework.io.bundle.package.v1=nep-helm-operator
+# --&gt; Using cache 6664d1d6c64c0954c18a432194845551e5a0c6f9bba33175d77c8791e2b0f6e0
+# --&gt; 6664d1d6c64
+# STEP 6/14: LABEL operators.operatorframework.io.bundle.channels.v1=alpha
+# --&gt; Using cache 32878b9e903851bb51b6c0635c77112b4244f4ce7e9d8a7b0a0d8cf7fe7bbe0e
+# --&gt; 32878b9e903
+# STEP 7/14: LABEL operators.operatorframework.io.metrics.builder=operator-sdk-v1.10.1-ocp
+# --&gt; Using cache c5482c80a3287494a5f35ee8df782f4499ad6def2aaa55652e5fc57d4dfa8f0d
+# --&gt; c5482c80a32
+# STEP 8/14: LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
+# --&gt; Using cache 68822f2fae03c5efc8b980882f66e870d8942d80dbf697e3d784c46f95c50437
+# --&gt; 68822f2fae0
+# STEP 9/14: LABEL operators.operatorframework.io.metrics.project_layout=helm.sdk.operatorframework.io/v1
+# --&gt; Using cache a85519d2774008b3071baf6098ec59561102ef1f337acd19b2c7ef739ebae89e
+# --&gt; a85519d2774
+# STEP 10/14: LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
+# --&gt; Using cache 17a1b08e1dca2295f98e3288d592a08636d15d7461e25e11744a499160a1546c
+# --&gt; 17a1b08e1dc
+# STEP 11/14: LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
+# --&gt; Using cache 9b6a20b0ff75b501a321fe4fbdfd1d284763e65596dc85675f119e5e3de69657
+# --&gt; 9b6a20b0ff7
+# STEP 12/14: COPY bundle/manifests /manifests/
+# --&gt; Using cache ff3aa5b299dae11f464d8ad56f4ae5130974e1cebd0cf273bc03aba11fcb7377
+# --&gt; ff3aa5b299d
+# STEP 13/14: COPY bundle/metadata /metadata/
+# --&gt; Using cache 19395ef3259bbb4e1f5da9616195139698a3ef18e7f904a2a1cd7515cd9829f3
+# --&gt; 19395ef3259
+# STEP 14/14: COPY bundle/tests/scorecard /tests/scorecard/
+# --&gt; Using cache 2268eb0a731f424f70e5b46222a1accd5344560ac9ab609ca3ccb5a4d0cd6669
+# COMMIT quay.io/nep/nep-helm-operator:bundle-v01
+# --&gt; 2268eb0a731
+# Successfully tagged quay.io/nep/nep-helm-operator:bundle-v01
+# Successfully tagged quay.io/nep/nep-helm-operator-bundle:v0.0.1
+# 2268eb0a731f424f70e5b46222a1accd5344560ac9ab609ca3ccb5a4d0cd6669
+
+
+make bundle-push BUNDLE_IMG=quay.io/nep/nep-helm-operator:bundle-v01
+# make docker-push IMG=quay.io/nep/nep-helm-operator:bundle-v01
+# make[1]: Entering directory '/data/helm'
+# docker push quay.io/nep/nep-helm-operator:bundle-v01
+# Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+# Getting image source signatures
+# Copying blob 24b54377030e skipped: already exists
+# Copying blob 1929cd83db02 skipped: already exists
+# Copying blob 44ef63131a17 [--------------------------------------] 0.0b / 0.0b
+# Copying config 2268eb0a73 done
+# Writing manifest to image destination
+# Copying config 2268eb0a73 [--------------------------------------] 0.0b / 3.3KiB
+# Writing manifest to image destination
+# Storing signatures
+# make[1]: Leaving directory '/data/helm'
+
+make catalog-build CATALOG_IMG=quay.io/nep/nep-helm-operator:catalog-v01  BUNDLE_IMG=quay.io/nep/nep-helm-operator:bundle-v01 
+# ./bin/opm index add --mode semver --tag quay.io/nep/nep-helm-operator:catalog-v01 --bundles quay.io/nep/nep-helm-operator:bundle-v01
+# INFO[0000] building the index                            bundles=&quot;[quay.io/nep/nep-helm-operator:bundle-v01]&quot;
+# INFO[0000] resolved name: quay.io/nep/nep-helm-operator:bundle-v01
+# INFO[0000] fetched                                       digest=&quot;sha256:1365e5913f05b733124a2a88c3113899db0c42f62b5758477577ef2117aff09f&quot;
+# INFO[0000] fetched                                       digest=&quot;sha256:be008c9c2b4f2c031b301174608accb8622c8d843aba2d1af4d053d8b00373c2&quot;
+# INFO[0000] fetched                                       digest=&quot;sha256:2268eb0a731f424f70e5b46222a1accd5344560ac9ab609ca3ccb5a4d0cd6669&quot;
+# INFO[0000] fetched                                       digest=&quot;sha256:d8e28b323fec2e4de5aecfb46c4ce3e315e20f49b78f43eb7a1d657798695655&quot;
+# INFO[0000] fetched                                       digest=&quot;sha256:c19ac761be31fa163ea3da95cb63fc0c2aaca3b316bfb049f6ee36f77522d323&quot;
+# INFO[0001] unpacking layer: {application/vnd.docker.image.rootfs.diff.tar.gzip sha256:d8e28b323fec2e4de5aecfb46c4ce3e315e20f49b78f43eb7a1d657798695655 2985 [] map[] &lt;nil&gt;}
+# INFO[0001] unpacking layer: {application/vnd.docker.image.rootfs.diff.tar.gzip sha256:c19ac761be31fa163ea3da95cb63fc0c2aaca3b316bfb049f6ee36f77522d323 398 [] map[] &lt;nil&gt;}
+# INFO[0001] unpacking layer: {application/vnd.docker.image.rootfs.diff.tar.gzip sha256:be008c9c2b4f2c031b301174608accb8622c8d843aba2d1af4d053d8b00373c2 438 [] map[] &lt;nil&gt;}
+# INFO[0001] Could not find optional dependencies file     dir=bundle_tmp582129875 file=bundle_tmp582129875/metadata load=annotations
+# INFO[0001] found csv, loading bundle                     dir=bundle_tmp582129875 file=bundle_tmp582129875/manifests load=bundle
+# INFO[0001] loading bundle file                           dir=bundle_tmp582129875/manifests file=apps.nep.com_vbbus.yaml load=bundle
+# INFO[0001] loading bundle file                           dir=bundle_tmp582129875/manifests file=nep-helm-operator-controller-manager-metrics-service_v1_service.yaml load=bundle
+# INFO[0001] loading bundle file                           dir=bundle_tmp582129875/manifests file=nep-helm-operator-manager-config_v1_configmap.yaml load=bundle
+# INFO[0001] loading bundle file                           dir=bundle_tmp582129875/manifests file=nep-helm-operator-metrics-reader_rbac.authorization.k8s.io_v1_clusterrole.yaml load=bundle
+# INFO[0001] loading bundle file                           dir=bundle_tmp582129875/manifests file=nep-helm-operator.clusterserviceversion.yaml load=bundle
+# INFO[0001] Generating dockerfile                         bundles=&quot;[quay.io/nep/nep-helm-operator:bundle-v01]&quot;
+# INFO[0001] writing dockerfile: index.Dockerfile322782265  bundles=&quot;[quay.io/nep/nep-helm-operator:bundle-v01]&quot;
+# INFO[0001] running podman build                          bundles=&quot;[quay.io/nep/nep-helm-operator:bundle-v01]&quot;
+# INFO[0001] [podman build --format docker -f index.Dockerfile322782265 -t quay.io/nep/nep-helm-operator:catalog-v01 .]  bundles=&quot;[quay.io/nep/nep-helm-operator:bundle-v01]&quot;
+
+make catalog-push CATALOG_IMG=quay.io/nep/nep-helm-operator:catalog-v01
+# make docker-push IMG=quay.io/nep/nep-helm-operator:catalog-v01
+# make[1]: Entering directory '/data/helm'
+# docker push quay.io/nep/nep-helm-operator:catalog-v01
+# Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg.
+# Getting image source signatures
+# Copying blob 8a20ae5d4166 done
+# Copying blob a98a386b6ec2 skipped: already exists
+# Copying blob 4e7f383eb531 skipped: already exists
+# Copying blob bc276c40b172 skipped: already exists
+# Copying blob b15904f6a114 skipped: already exists
+# Copying blob 86aadf4df7dc skipped: already exists
+# Copying config 5d5d1c219c done
+# Writing manifest to image destination
+# Storing signatures
+# make[1]: Leaving directory '/data/helm'
+
+export OPERATOR_VERION=v04
+
+make docker-build IMG=quay.io/nep/nep-helm-operator:$OPERATOR_VERION
+
+make docker-push IMG=quay.io/nep/nep-helm-operator:$OPERATOR_VERION
+
+make bundle IMG=quay.io/nep/nep-helm-operator:$OPERATOR_VERION
+
+make bundle-build bundle-push catalog-build catalog-push \
+    BUNDLE_IMG=quay.io/nep/nep-helm-operator:bundle-$OPERATOR_VERION \
+    CATALOG_IMG=quay.io/nep/nep-helm-operator:catalog-$OPERATOR_VERION
+
+# on openshift helper node
+cat &lt;&lt; EOF &gt; /data/install/nep.catalog.yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: nep
+  namespace: openshift-marketplace
+spec:
+  displayName: nep
+  publisher: nep
+  sourceType: grpc
+  image: ghcr.io/wangzheng422/nep-helm-operator:catalog-2021-12-03-0504
+  updateStrategy:
+    registryPoll:
+      interval: 10m
+EOF
+oc create -f /data/install/nep.catalog.yaml
+# to restore
+oc delete -f /data/install/nep.catalog.yaml
+
+</code></pre>
+<h2 id="helm-repository"><a class="header" href="#helm-repository">helm repository</a></h2>
+<p>https://medium.com/@mattiaperi/create-a-public-helm-chart-repository-with-github-pages-49b180dbb417</p>
+<pre><code class="language-bash"># try to build the repo, and add it into github action
+# mkdir -p /data/helm/helm-repo
+cd /data/helm/helm-repo
+
+helm package ../helm-charts/*
+
+helm repo index --url https://wangzheng422.github.io/nep-helm-operator/ .
+
+# try to use the repo
+helm repo add myhelmrepo https://wangzheng422.github.io/nep-helm-operator/
+
+helm repo list
+# NAME            URL
+# myhelmrepo      https://wangzheng422.github.io/nep-helm-operator/
+
+helm search repo vbbu
+# NAME            CHART VERSION   APP VERSION     DESCRIPTION
+# myhelmrepo/vbbu 0.1.0           1.16.0          A Helm chart for Kubernetes
+
+# for ocp, if you are disconnected
+cat &lt;&lt; EOF &gt; /data/install/helm.nep.yaml
+apiVersion: helm.openshift.io/v1beta1
+kind: HelmChartRepository
+metadata:
+  name: nep-helm-charts-wzh
+spec:
+ # optional name that might be used by console
+  name: nep-helm-charts-wzh
+  connectionConfig:
+    url: http://nexus.ocp4.redhat.ren:8082/repository/wangzheng422.github.io/
+EOF
+oc create -f /data/install/helm.nep.yaml
+
+</code></pre>
 
                     </main>
 

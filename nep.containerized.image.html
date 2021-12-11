@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.env.html"><strong aria-hidden="true">2.4.</strong> 向容器中的systemd服务注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.5.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html" class="active"><strong aria-hidden="true">2.6.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.7.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务并注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.4.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html" class="active"><strong aria-hidden="true">2.5.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.6.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -135,6 +135,67 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="基础镜像制作"><a class="header" href="#基础镜像制作">基础镜像制作</a></h1>
+<p>帮助客户梳理基础镜像构建，开始构建CI/CD流程.</p>
+<p>基于UBI的镜像，有订阅证书问题，现在准备一下。</p>
+<pre><code class="language-bash"># on a vultr host, rockylinux
+mkdir -p /data/rhel8/entitle
+cd /data/rhel8/entitle
+
+# goto https://access.redhat.com/management/subscriptions
+# search employee sku, find a system, go into, and download from subscription
+# or goto: https://access.redhat.com/management/systems/4d1e4cc0-2c99-4431-99ce-2f589a24ea11/subscriptions
+dnf install -y unzip 
+unzip *
+unzip consumer_export.zip
+find . -name *.pem -exec cp {} ./ \;
+
+mkdir -p /data/dockerfile/
+cd /data/dockerfile/
+
+ls /data/rhel8/entitle/*.pem | sed -n '2p' | xargs -I DEMO /bin/cp -f DEMO ./ 
+
+</code></pre>
+<h2 id="redhat-ubi8"><a class="header" href="#redhat-ubi8">redhat ubi8</a></h2>
+<p>UBI的容器，有注入和使用证书的技巧。</p>
+<pre><code class="language-bash">cat &lt;&lt; EOF &gt; /data/dockerfile/nep.redhat.ubi8.dockerfile
+FROM registry.access.redhat.com/ubi8
+
+COPY *.pem /etc/pki/entitlement/entitlement.pem
+COPY *.pem /etc/pki/entitlement/entitlement-key.pem
+
+RUN dnf -y update || true &amp;&amp; \
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum/pluginconf.d/subscription-manager.conf &amp;&amp; \
+  sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/yum.repos.d/redhat.repo &amp;&amp; \
+  dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm &amp;&amp; \
+  dnf -y update &amp;&amp; \
+  dnf -y install net-tools pciutils lksctp-tools iptraf-ng htop vim tcpdump wget bzip2 lrzsz dhcp-server dhcp-client  &amp;&amp; \
+  dnf -y clean all 
+
+EOF
+buildah bud -t quay.io/nep/base-image:ubi8 -f /data/dockerfile/nep.redhat.ubi8.dockerfile .
+
+</code></pre>
+<h2 id="redhat-ubi7"><a class="header" href="#redhat-ubi7">redhat ubi7</a></h2>
+<p>UBI的容器，有注入和使用证书的技巧。</p>
+<pre><code class="language-bash">cat &lt;&lt; EOF &gt; /data/dockerfile/nep.redhat.ubi.7.dockerfile
+FROM registry.access.redhat.com/ubi7/ubi
+
+COPY *.pem /etc/pki/entitlement/entitlement.pem
+COPY *.pem /etc/pki/entitlement/entitlement-key.pem
+
+RUN sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/rhsm/rhsm.conf &amp;&amp; \
+  yum -y update || true &amp;&amp; \
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum/pluginconf.d/subscription-manager.conf &amp;&amp; \
+  sed -i 's|%(ca_cert_dir)sredhat-uep.pem|/etc/rhsm/ca/redhat-uep.pem|g' /etc/yum.repos.d/redhat.repo &amp;&amp; \
+  yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm &amp;&amp; \
+  yum -y update &amp;&amp; \
+  yum -y install net-tools pciutils lksctp-tools iptraf-ng htop vim tcpdump wget bzip2 lrzsz dhcp &amp;&amp; \
+  yum clean all 
+
+EOF
+buildah bud -t quay.io/nep/base-image:ubi7 -f /data/dockerfile/nep.redhat.ubi.7.dockerfile .
+
+</code></pre>
 
                     </main>
 

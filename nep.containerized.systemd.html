@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>容器中使用systemd加载服务 - OpenShift4 一步一脚印</title>
+        <title>容器中使用systemd加载服务并注入env参数 - OpenShift4 一步一脚印</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html" class="active"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.env.html"><strong aria-hidden="true">2.4.</strong> 向容器中的systemd服务注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.5.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.6.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.7.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html" class="active"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务并注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.4.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.5.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.6.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -134,7 +134,65 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="容器中使用systemd加载服务"><a class="header" href="#容器中使用systemd加载服务">容器中使用systemd加载服务</a></h1>
+                        <h1 id="容器中使用systemd加载服务并注入env参数"><a class="header" href="#容器中使用systemd加载服务并注入env参数">容器中使用systemd加载服务并注入env参数</a></h1>
+<p>客户希望在容器中，是用systemd做1号进程，从而让容器方案和裸机方案对齐。</p>
+<pre><code class="language-bash">mkdir -p /data/systemd
+
+cd /data/systemd
+cat &lt;&lt; 'EOF' &gt; service.sh
+#!/bin/bash
+
+# Import our environment variables from systemd
+for e in $(tr &quot;\000&quot; &quot;\n&quot; &lt; /proc/1/environ); do
+  # if [[ $e == DEMO_ENV* ]]; then
+    eval &quot;export $e&quot;
+  # fi
+done
+
+echo $DEMO_ENV_NIC &gt; /demo.txt
+echo $DEMO_ENV_IP &gt;&gt; /demo.txt
+echo $DEMO_ENV_MASK &gt;&gt; /demo.txt
+
+EOF
+cat &lt;&lt; EOF &gt; vbbu.service
+[Unit]
+Description=vBBU Server
+After=network.target
+
+[Service]
+Type=forking
+User=root
+WorkingDirectory=/root/
+ExecStart=/service.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat &lt;&lt; EOF &gt; ./vbbu.dockerfile
+FROM docker.io/rockylinux/rockylinux:8
+
+USER root
+COPY service.sh /service.sh
+RUN chmod +x /service.sh
+COPY vbbu.service /etc/systemd/system/vbbu.service
+
+RUN systemctl enable vbbu.service
+
+entrypoint [&quot;/usr/sbin/init&quot;]
+EOF
+
+buildah bud -t quay.io/wangzheng422/qimgs:systemd -f vbbu.dockerfile .
+
+podman run --rm \
+  --env DEMO_ENV_NIC=eth1 \
+  --env DEMO_ENV_IP=192.168.100.22 \
+  --env DEMO_ENV_MASK=24 \
+  quay.io/wangzheng422/qimgs:systemd
+
+podman exec -it `podman ps | grep systemd | awk '{print $1}'` bash
+
+</code></pre>
 
                     </main>
 
@@ -143,7 +201,7 @@
                             <a rel="prev" href="nep.containerized.router.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a rel="next" href="nep.containerized.systemd.env.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="nep.containerized.device.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -155,7 +213,7 @@
                     <a rel="prev" href="nep.containerized.router.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next" href="nep.containerized.systemd.env.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="nep.containerized.device.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html" class="active"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.env.html"><strong aria-hidden="true">2.4.</strong> 向容器中的systemd服务注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.5.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.6.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.7.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">介绍</a></li><li class="chapter-item expanded affix "><a href="thanks.html">献词</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.html"><strong aria-hidden="true">1.</strong> openshift4.9 安装</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="ocp4.9.install.1master.html"><strong aria-hidden="true">1.1.</strong> 单 master 集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.install.sno.html"><strong aria-hidden="true">1.2.</strong> SNO 单节点集群安装</a></li><li class="chapter-item expanded "><a href="ocp4.9.active.rt.html"><strong aria-hidden="true">1.3.</strong> 激活实时操作系统</a></li></ol></li><li class="chapter-item expanded "><a href="nep.containerized.html"><strong aria-hidden="true">2.</strong> NEP应用容器化</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="nep.containerized.configmap.html"><strong aria-hidden="true">2.1.</strong> configmap方式注入license</a></li><li class="chapter-item expanded "><a href="nep.containerized.router.html" class="active"><strong aria-hidden="true">2.2.</strong> service使用host port, router方式暴露</a></li><li class="chapter-item expanded "><a href="nep.containerized.systemd.html"><strong aria-hidden="true">2.3.</strong> 容器中使用systemd加载服务并注入env参数</a></li><li class="chapter-item expanded "><a href="nep.containerized.device.html"><strong aria-hidden="true">2.4.</strong> 设备驱动容器化方式加载</a></li><li class="chapter-item expanded "><a href="nep.containerized.image.html"><strong aria-hidden="true">2.5.</strong> 基础镜像制作</a></li><li class="chapter-item expanded "><a href="nep.containerized.helm.html"><strong aria-hidden="true">2.6.</strong> helm chart / helm operator 制作</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -135,6 +135,219 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="service使用host-port-router方式暴露"><a class="header" href="#service使用host-port-router方式暴露">service使用host port, router方式暴露</a></h1>
+<p>用本机host path的方式，挂载到容器，从而注入license. 同时用host port + router的方式，暴露管理段服务。</p>
+<pre><code class="language-bash">
+# 创建host path
+cat &lt;&lt; EOF &gt; /data/install/host-path.yaml
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-set-selinux-for-hostpath-nep-master
+  labels:
+    machineconfiguration.openshift.io/role: master
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    systemd:
+      units:
+        - contents: |
+            [Unit]
+            Description=Set SELinux chcon for hostpath nep
+            Before=kubelet.service
+
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            ExecStartPre=-mkdir -p /var/nep/
+            ExecStart=chcon -h unconfined_u:object_r:container_file_t /var/nep/
+
+            [Install]
+            WantedBy=multi-user.target
+          enabled: true
+          name: hostpath-nep.service
+EOF
+oc create -f /data/install/host-path.yaml
+
+# restore
+oc delete -f /data/install/host-path.yaml
+
+cat &lt;&lt; EOF &gt; /data/install/vbbu.yaml
+---
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;xeth&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.160.0/24&quot;,
+      &quot;gateway&quot;: &quot;192.168.160.254&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.160.1&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.160.1&quot;
+    }
+  }'
+
+---
+apiVersion: &quot;k8s.cni.cncf.io/v1&quot;
+kind: NetworkAttachmentDefinition
+metadata:
+  name: host-device-du-ens
+spec:
+  config: '{
+    &quot;cniVersion&quot;: &quot;0.3.0&quot;,
+    &quot;type&quot;: &quot;host-device&quot;,
+    &quot;device&quot;: &quot;enp103s0f0&quot;,
+    &quot;ipam&quot;: {
+      &quot;type&quot;: &quot;host-local&quot;,
+      &quot;subnet&quot;: &quot;192.168.12.0/24&quot;,
+      &quot;rangeStart&quot;: &quot;192.168.12.105&quot;,
+      &quot;rangeEnd&quot;: &quot;192.168.12.106&quot;
+    }
+  }'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: du-deployment1
+  labels:
+    app: du-deployment1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: du-pod1
+  template:
+    metadata:
+      labels:
+        app: du-pod1
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+          { &quot;name&quot;: &quot;host-device-du-ens&quot;,
+            &quot;interface&quot;: &quot;veth11&quot; },
+          { &quot;name&quot;: &quot;host-device-du&quot;,
+            &quot;interface&quot;: &quot;xeth&quot; }
+          ]'
+      cpu-load-balancing.crio.io: &quot;true&quot;
+    spec:
+      runtimeClassName: performance-wzh-performanceprofile
+      containers:
+      - name: du-container1
+        image: &quot;registry.ocp4.redhat.ren:5443/ocp4/du:v1-1623-wzh-01&quot;
+        imagePullPolicy: IfNotPresent
+        tty: true
+        stdin: true
+        env:
+          - name: duNetProviderDriver
+            value: &quot;host-netdevice&quot;
+          - name: DEMO_ENV_NIC
+            value: xeth
+          - name: DEMO_ENV_IP
+            value: &quot;192.168.100.22&quot;
+          - name: DEMO_ENV_MASK
+            value: 24
+        command: [&quot;/usr/sbin/init&quot;]
+        # - sleep
+        # - infinity
+        securityContext:
+            privileged: true
+            capabilities:
+                add:
+                - CAP_SYS_ADMIN
+        volumeMounts:
+          - mountPath: /hugepages
+            name: hugepage
+          - name: lib-modules
+            mountPath: /lib/modules
+          - name: src
+            mountPath: /usr/src
+          - name: dev
+            mountPath: /dev
+          - name: cache-volume
+            mountPath: /dev/shm
+          # - name: license-volume
+          #   mountPath: /nep/lic
+          - name: config
+            mountPath: /nep
+        resources:
+          requests:
+            cpu: 15
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+          limits:
+            cpu: 15
+            memory: 64Gi
+            hugepages-1Gi: 16Gi
+      volumes:
+        - name: hugepage
+          emptyDir:
+            medium: HugePages
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: src
+          hostPath:
+            path: /usr/src
+        - name: config
+          hostPath:
+            path: /var/nep
+        - name: dev
+          hostPath:
+            path: &quot;/dev&quot;
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        # - name: license-volume
+        #   configMap:
+        #     name: license.for.nep
+        #     items:
+        #     - key: license
+        #       path: license.lic
+      nodeSelector:
+        node-role.kubernetes.io/master: &quot;&quot;
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: du-http 
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80 
+    nodePort: 31071
+  type: NodePort 
+  selector:
+    app: du-pod1
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: du-http 
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: Service
+    name: du-http 
+
+EOF
+
+oc create -f /data/install/vbbu.yaml
+
+# to restore
+oc delete -f /data/install/vbbu.yaml
+
+</code></pre>
 
                     </main>
 
