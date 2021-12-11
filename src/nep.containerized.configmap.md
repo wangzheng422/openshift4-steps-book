@@ -1,4 +1,4 @@
-# configmap方式注入license
+# configmap方式注入license, service使用host port, router方式暴露
 
 是用config map的方式，向容器注入license. 同时用host port + router的方式，暴露管理段服务。
 

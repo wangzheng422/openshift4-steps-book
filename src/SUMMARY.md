@@ -8,7 +8,7 @@
   - [激活实时操作系统](./ocp4.9.active.rt.md)
 - [NEP应用容器化](./nep.containerized.md)
   - [configmap方式注入license](./nep.containerized.configmap.md)
-  - [service使用host port, router方式暴露](./nep.containerized.router.md)
+  - [hostpath方式注入license](./nep.containerized.router.md)
   - [容器中使用systemd加载服务并注入env参数](./nep.containerized.systemd.md)
   - [设备驱动容器化方式加载](./nep.containerized.device.md)
   - [基础镜像制作](./nep.containerized.image.md)
