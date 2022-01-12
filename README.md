@@ -11,3 +11,9 @@ cd /Users/wzh/Desktop/dev/openshift4-steps-book
 mdbook build
 
 ```
+
+# 许可证
+书中涉及代码采用GNU V3许可。
+
+# 版权声明
+本书遵循 **[CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)** 协议。**商业转载必须征求作者 wangzheng422 授权同意，转载请务必注明[出处](https://github.com/wangzheng422/docker_env)。** 作者保留最终解释权及法律追究权力。
